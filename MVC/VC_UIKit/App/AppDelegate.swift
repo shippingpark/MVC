@@ -1,8 +1,8 @@
 //
 //  AppDelegate.swift
-//  MVC_UIKit
+//  VC_UIKit
 //
-//  Created by 박혜운 on 7/21/24.
+//  Created by 박혜운 on 7/23/24.
 //
 
 import UIKit
