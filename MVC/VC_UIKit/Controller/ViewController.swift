@@ -9,83 +9,41 @@ import UIKit
 import Model
 import MVCNetwork
 
-class ViewController: UIViewController {
-  var network: MVCNetwork?
+class ViewController: UIViewController, ContentViewDelegate {
+  private var network: MVCNetwork
+  private var mainView: ContentViewInterface
   
-  private lazy var infoLabel: UILabel = {
-    let label = UILabel()
-    label.text = "..."
-    label.font = .preferredFont(forTextStyle: .headline)
-    label.textColor = .darkGray
-    label.translatesAutoresizingMaskIntoConstraints = false
-    label.textAlignment = .center
-    label.numberOfLines = 0
-    return label
-  }()
+  init(view: ContentViewInterface, network: MVCNetwork) {
+    self.mainView = view
+    self.network = network
+    super.init(nibName: nil, bundle: nil)
+  }
   
-  private lazy var textField: UITextField = {
-    let textField = UITextField()
-    textField.placeholder = "Enter text"
-    textField.borderStyle = .roundedRect
-    textField.translatesAutoresizingMaskIntoConstraints = false
-    return textField
-  }()
+  required init?(coder: NSCoder) {
+    fatalError("init(coder:) has not been implemented")
+  }
   
-  private lazy var confirmButton: UIButton = {
-    let button = UIButton()
-    button.setTitle("확인", for: .normal)
-    button.titleLabel?.font = .preferredFont(forTextStyle: .body)
-    button.setTitleColor(.black, for: .normal)
-    button.backgroundColor = .lightGray
-    button.translatesAutoresizingMaskIntoConstraints = false
-    button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
-    return button
-  }()
+  override func loadView() {
+    self.view = mainView
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    self.view.backgroundColor = .white
-    self.configureSubviews()
-    self.configureUI()
+    mainView.delegate = self
   }
   
-  private func configureSubviews() {
-    self.view.addSubview(self.confirmButton)
-    self.view.addSubview(self.textField)
-    self.view.addSubview(self.infoLabel)
-  }
-  
-  private func configureUI() {
-    NSLayoutConstraint.activate([
-      confirmButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      confirmButton.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-      confirmButton.widthAnchor.constraint(equalToConstant: 200),
-      confirmButton.heightAnchor.constraint(equalToConstant: 50),
-      
-      textField.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      textField.bottomAnchor.constraint(equalTo: confirmButton.topAnchor, constant: -20),
-      textField.widthAnchor.constraint(equalToConstant: 200),
-      textField.heightAnchor.constraint(equalToConstant: 40),
-      
-      infoLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      infoLabel.bottomAnchor.constraint(equalTo: textField.topAnchor, constant: -20),
-      infoLabel.widthAnchor.constraint(equalToConstant: 300),
-      infoLabel.heightAnchor.constraint(greaterThanOrEqualToConstant: 30)
-    ])
-  }
-  
-  @objc func buttonTapped() {
-    guard let input = textField.text else { return }
-    
-    self.infoLabel.text = "로딩중..."
-    
+  func confirmButtonTapped(with input: String?) {
+    guard let input else { mainView.updateInfoLabelWith("입력 없음"); return }
+    mainView.updateInfoLabelWith("로딩 중")
     Task {
-      guard let model = await network?.fetchData(from: input) else {
-        self.infoLabel.text = "다운 실패"
-        return
-      }
-      DispatchQueue.main.async { [weak self] in
-        self?.infoLabel.text = model.text
+      if let model = await network.fetchData(from: input) {
+        DispatchQueue.main.async { [weak self] in
+          self?.mainView.updateInfoLabelWith(model.text)
+        }
+      } else {
+        DispatchQueue.main.async { [weak self] in
+          self?.mainView.updateInfoLabelWith("다운 실패")
+        }
       }
     }
   }

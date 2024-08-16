@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
+import MVCNetworkImp
 
 @main
 struct VC_SwiftUIApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+  var body: some Scene {
+    WindowGroup {
+      let network = MVCNetworkImp()
+      let controller = Controller(network: network)
+      ContentView(controller: controller)
     }
+  }
 }

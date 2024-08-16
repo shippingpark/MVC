@@ -15,8 +15,9 @@ protocol ContentViewDelegate: AnyObject {
 }
 
 // MARK: - Input: Update
-protocol MainViewInterface: UIView {
-  /// action을 내보낼 창구. 엄밀히는 View 기준 Input과 무관하고 Output과 관련 있으나 Output 연결에 필수적이므로 작성 요구
+protocol ContentViewInterface: UIView {
+  /// delegate는 action을 내보낼 창구.
+  /// 엄밀히는 View 기준 Input과 무관하고 Output과 관련 있으나 Output 연결에 필수적이므로 작성 요구
   var delegate: ContentViewDelegate? { get set }
   func updateInfoLabelWith(_ text: String)
 }
@@ -106,7 +107,7 @@ class ContentView: UIView {
 }
 
 // MARK: - Update
-extension ContentView: MainViewInterface {
+extension ContentView: ContentViewInterface {
   public func updateInfoLabelWith(_ text: String) {
     updateInfoLabel(with: text)
   }
